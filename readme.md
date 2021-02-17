@@ -25,7 +25,7 @@ This mean you can have conditional CSS, substitute variables, run calculations, 
 ## Examples
 
 ```javascript
-import { prop, renderToString, vars } from "yieldcss";
+import { prop, renderToString, rule } from "yieldcss";
 
 // Inspired by https://github.com/sindresorhus/modern-normalize
 function* Reset() {

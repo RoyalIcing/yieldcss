@@ -73,6 +73,19 @@ box-sizing: border-box;font: inherit;
 }`.trim());
   });
   
+  test("rule with variable", async () => {
+    function* Reset() {
+      yield rule(['*', '*::before', '*::after'])([
+        prop('color', Symbol('color-primary')),
+      ]);
+    }
+    
+    await expect(renderToString(Reset())).resolves.toEqual(
+`*, *::before, *::after {
+color: var(--color-primary);
+}`.trim());
+  });
+  
   test("empty array", async () => {
     await expect(renderToString([])).resolves.toEqual("");
   });

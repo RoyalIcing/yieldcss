@@ -3,7 +3,7 @@ export type PresentableValue = string | number | Promise<PresentableValue>;
 interface Property {
   type: 'property';
   key: string;
-  value: string;
+  value: string | Symbol;
 }
 
 interface Rule {
@@ -14,7 +14,7 @@ interface Rule {
 
 function* empty() {}
 
-export function prop(key: string, value: string): Property {
+export function prop(key: string, value: string | Symbol): Property {
   return { type: 'property', key, value };
 }
 
@@ -52,7 +52,11 @@ export function* renderGenerator(iterable) {
       for (const property of child.properties) {
         yield property.key;
         yield ': ';
-        yield property.value;
+        if (typeof property.value === 'symbol') {
+          yield `var(--${property.value.description})`;
+        } else {
+          yield property.value;
+        }
         yield ';';
       }
       yield '\n}';

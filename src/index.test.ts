@@ -73,7 +73,7 @@ box-sizing: border-box;font: inherit;
 }`.trim());
   });
   
-  test("rule with variable", async () => {
+  test("rule reading variable", async () => {
     function* Reset() {
       yield rule(['*', '*::before', '*::after'])([
         prop('color', Symbol('color-primary')),
@@ -83,6 +83,19 @@ box-sizing: border-box;font: inherit;
     await expect(renderToString(Reset())).resolves.toEqual(
 `*, *::before, *::after {
 color: var(--color-primary);
+}`.trim());
+  });
+  
+  test("rule declaring custom property", async () => {
+    function* Reset() {
+      yield rule([':root'])([
+        prop(Symbol('color-primary'), 'red'),
+      ]);
+    }
+    
+    await expect(renderToString(Reset())).resolves.toEqual(
+`:root {
+--color-primary: red;
 }`.trim());
   });
   

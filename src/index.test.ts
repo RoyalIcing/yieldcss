@@ -1,4 +1,9 @@
-import { css, prop, rule, renderToString } from "./index";
+import { css, data, prop, rule, renderToString } from "./index";
+
+test("prop", () => {
+  expect(prop('box-sizing', 'border-box')).toEqual({ type: 'property', key: 'box-sizing', value: 'border-box' });
+  expect(prop.boxSizing('border-box')).toEqual({ type: 'property', key: 'box-sizing', value: 'border-box' });
+})
 
 describe("renderToString()", () => {
   test("rule taking array of properties", async () => {
@@ -50,7 +55,7 @@ box-sizing: border-box;font: inherit;
 }`.trim());
   });
   
-  test("generator function yielding another generator function", async () => {
+  test("generator function yielding generator", async () => {
     function* Anything() {
       yield '*';
       yield '*::before';
@@ -99,6 +104,32 @@ color: var(--color-primary);
 }`.trim());
   });
   
+  test("rule targeting data attribute", async () => {
+    function* Style() {
+      yield rule([data('outline')])([
+        prop(Symbol('color-primary'), 'red'),
+      ]);
+    }
+    
+    await expect(renderToString(Style())).resolves.toEqual(
+`[outline] {
+--color-primary: red;
+}`.trim());
+  });
+  
+  test("rule targeting data attribute with value", async () => {
+    function* Style() {
+      yield rule([data('tone', 'error')])([
+        prop(Symbol('color-primary'), 'red'),
+      ]);
+    }
+    
+    await expect(renderToString(Style())).resolves.toEqual(
+`[tone="error"] {
+--color-primary: red;
+}`.trim());
+  });
+  
   test("empty array", async () => {
     await expect(renderToString([])).resolves.toEqual("");
   });
@@ -126,6 +157,16 @@ color: var(--color-primary);
       renderToString(
         (function* () {
           yield "abc";
+        })()
+      )
+    ).resolves.toEqual("abc");
+  });
+  
+  test("generator function yielding Promise of simple string", async () => {
+    await expect(
+      renderToString(
+        (function* () {
+          yield Promise.resolve("abc");
         })()
       )
     ).resolves.toEqual("abc");

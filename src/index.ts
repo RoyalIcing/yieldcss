@@ -14,12 +14,33 @@ interface Rule {
 
 function* empty() {}
 
-export function prop(key: string | symbol, value: string | symbol): Property {
+function propFunc(key: string | symbol, value: string | symbol): Property {
   return { type: 'property', key, value };
 }
 
+type PropFunc = typeof propFunc;
+type CSSStylePropName = Exclude<keyof CSSStyleDeclaration, number | "setProperty" | "removeProperty" | "item" | "getPropertyValue" | "getPropertyPriority" | "length">;
+type CSSStylePropBuilder = Record<CSSStylePropName, (value: string) => Property>;
+
+type Prop = PropFunc & CSSStylePropBuilder;
+
+export const prop = new Proxy(propFunc, {
+  get(_target, key: keyof CSSStyleDeclaration) {
+    const kebabCase = key.toString().replace(/[A-Z]/g, '-$&').toLowerCase();
+    return (value) => propFunc(kebabCase, value);
+  }
+}) as Prop;
+
 export function rule(selectors: Iterable<string>): (iterable: Iterable<Property>) => Rule {
   return (iterable) => ({ type: 'rule', selectors: Array.from(selectors), properties: iterable });
+}
+
+export function data(key: string, value?: string): string {
+  if (value === undefined) {
+    return `[${key}]`;
+  } else {
+    return `[${key}=${JSON.stringify(value)}]`;
+  }
 }
 
 /**
